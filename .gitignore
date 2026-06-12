@@ -3,3 +3,8 @@
 *.env
 *.DS_Store
 /data/raw_pdfs
+# Ignore everything inside the vector storage directory
+vector_storage/*
+
+# But do not ignore the .gitkeep files that preserve the folder structure
+!vector_storage/**/.gitkeep

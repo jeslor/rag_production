@@ -2,7 +2,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
 
-from services import ingest_pdf_directory
+from services import ingest_pdf_directory, ingest_pdf_directory_pymupdf
 
 
 
@@ -26,11 +26,11 @@ def build_knowledge_index():
     print("2. chunking text for optimal embeddings resolutions")
     splitter = RecursiveCharacterTextSplitter(chunk_size=750, chunk_overlap=150)
     chunks = splitter.split_documents(docs)
-    print(chunks)
+    # print(chunks)
 
     print("3. Initialising local embedding transformers ...")
     embedding = HuggingFaceEmbeddings(model_name=MODEL_NAME, model_kwargs={'device': CHIPSET['Apple_silicon']})
-    print(embedding)
+    # print(embedding)
 
     print("4. constructing and persisting vector Database ... ")
     db = Chroma.from_documents(documents=chunks, embedding=embedding, persist_directory=DB_DIR)

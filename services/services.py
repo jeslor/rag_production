@@ -1,6 +1,7 @@
 
 from pypdf import PdfReader
 from pathlib import Path
+import fitz
 from langchain_core.documents import Document
 
 
@@ -57,4 +58,51 @@ def ingest_pdf_directory(directory_path: str) -> list[Document]:
             continue
 
     print(f"\n--- Ingestion Summary: Successfully parsed {success_count} PDFs. Failed on {error_count} PDFs. ---")
+    return documents
+
+def ingest_pdf_directory_pymupdf(directory_path: str) -> list[Document]:
+    documents = []
+    path = Path(directory_path)
+
+    success_count = 0
+
+    # Iterate through all PDFS in the data folder or in the company repository.
+    for pdf_path in path.glob("**/*.pdf"):
+        try:
+            # open the document with PYMUPDF (highly resilient for complex layouts)
+            doc_object = fitz.open(pdf_path)
+            file_has_text = False
+
+            for page_num, page in enumerate(doc_object):
+                # "blocks"-> text extraction preserves column reading orders automatically
+                text = page.get_text("text")
+
+                # fallback for production grade -> grab whatever layout strings present
+                if not text.strip():
+                    text = page.get_text("block")
+
+                    # if it is a structured image page, we still keep this object
+                    # with a place holder or layout tag for the metadata index
+                    if isinstance(text, list):
+                        text = "\n".join([b[4] for b in text if isinstance(b, tuple) and len(b) > 4])
+
+                doc = Document(
+                    page_content= text if text.strip() else f"[Image page/ Graphic Conent]",
+                    metadata={
+                        "source": str(pdf_path),
+                        "file_name": pdf_path.name,
+                        "page": page_num + 1,
+                        "total_pages": len(doc_object)
+                    }
+                )
+                documents.append(doc)
+                file_has_text = True
+
+            if file_has_text:
+                print(f"✅ Successfully ingested: {pdf_path.name} ({len(doc_object)} pages)")
+        except Exception as e:
+            print(f"❌ Error processing {pdf_path.name}: {e}")
+            continue
+
+    print(f"\n--- Processed {success_count} health knowledge assets ---")
     return documents

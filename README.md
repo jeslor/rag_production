@@ -78,7 +78,10 @@ local-rag-boilerplate/
 ### 1. Clone & Navigate
 
 ```
-    git clone [https://github.com/jeslor/local-rag-boilerplate.git](https://github.com/jeslor/local-rag-boilerplate.git)
+    # Clone the repository
+    git clone https://github.com/jeslor/local-rag-boilerplate.git
+
+    # Enter project directory
     cd local-rag-boilerplate
 ```
 
@@ -86,6 +89,19 @@ local-rag-boilerplate/
 Install your system dependencies:
 ```
     pip install -r requirements.txt
+```
+For pytesseract to work, you ALSO need system-level install:
+
+```aiignore
+macOS:
+brew install tesseract
+
+Ubuntu:
+sudo apt-get install tesseract-ocr
+Windows:
+
+Install from installer:
+https://github.com/UB-Mannheim/tesseract/wiki
 ```
 
 ## 🚀 Execution Guide

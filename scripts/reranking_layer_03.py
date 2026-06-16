@@ -5,7 +5,7 @@ reranker_model = CrossEncoder("BAAI/bge-reranker-large")
 
 
 class Reranker:
-    def __init__(self, query: str, documents: list, top_k: int = 10, model: CrossEncoder = reranker_model):
+    def __init__(self, query: str, documents: list, top_k: int = 3, model: CrossEncoder = reranker_model):
         self.model = model
         self.query = query
         self.documents = documents
@@ -30,5 +30,7 @@ class Reranker:
             document = self.documents[original_index]
             document.metadata['rerank_score'] = float(hit['score'])
             reranked_documents.append(document)
+
+
 
         return reranked_documents

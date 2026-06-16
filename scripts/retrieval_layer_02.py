@@ -4,6 +4,9 @@ import os
 from langchain_chroma import Chroma
 
 class Retriever:
+    def __init__(self):
+        pass
+    
     @staticmethod
     def search_knowledge_base(query, num_of_candidates=10):
         chipset = config.get_optimal_chipset()

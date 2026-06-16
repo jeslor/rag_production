@@ -1,1 +1,1 @@
-from .services import ingest_pdf_directory
+from .services import ingest_pdf_directory, Document

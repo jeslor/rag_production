@@ -1,7 +1,19 @@
+# Standard and third party package imports
 import asyncio
-from nicegui import ui
-# Keep your original imports
-from scripts import Processor, Retriever, retriever_service, Reranker, build_context, prompt_model
+import os
+import sys
+from nicegui import ui, app, run
+
+
+# Appends your local project layout cleanly to Python's system paths
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+# Internal logic imports
+from scripts.query_processing_01 import processor_service
+from scripts.retrieval_layer_02 import retriever_service
+from scripts.reranking_layer_03 import rerank_service
+from scripts.build_context_04 import build_context
+from scripts.llm_generation_05 import local_model
 
 # App-wide global styles
 ui.add_head_html('''
@@ -12,7 +24,7 @@ ui.add_head_html('''
         font-family: ui-sans-serif, system-ui, sans-serif;
     }
     #c3.nicegui-content{
-    padding: 0px
+        padding: 0px
     }
     /* Custom scrollbar for chat history */
     .custom-scroll::-webkit-scrollbar {
@@ -32,12 +44,11 @@ ui.add_head_html('''
         border: 1px solid #1e293b; 
         border-radius: 1rem; 
         padding: 0.5rem;
-        box-shadow:
-          0 25px 50px -12px rgba(0, 0, 0, 0.25); 
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); 
         position: relative;
         align-items: center;
     }
-    
+
     .search-input .q-btn-item{
         background-color: #020617;
         opacity: 0.7;
@@ -45,8 +56,6 @@ ui.add_head_html('''
     .search-input .q-btn-item:hover{
         opacity: 1;
     }
-    
-    
 </style>
 ''')
 
@@ -67,7 +76,7 @@ async def rag_search_stream(user_query: str, container):
             ui.label(user_query).classes('text-base text-slate-100')
 
         # AI Assistant dynamic response card
-        with ui.card().classes('w-full bg-slate-900 border border-slate-800 p-5 rounded-xl shadow-lg mb-4') as card:
+        with ui.card().classes('w-full bg-slate-900 border border-slate-800 p-5 rounded-xl shadow-lg mb-4'):
             with ui.row().classes('items-center gap-2 text-emerald-400 text-xs font-semibold uppercase mb-3'):
                 ui.icon('smart_toy', size='xs')
                 ui.label('Assistant')
@@ -84,15 +93,13 @@ async def rag_search_stream(user_query: str, container):
                 status_text.text = text
                 if finished:
                     spinner.delete()
-                    # Change status box background to a subtle green accent
-                    status_container.classes('bg-emerald-950/30 border-emerald-900/50 text-emerald-350',
+                    status_container.classes('bg-emerald-950/30 border-emerald-900/50 text-emerald-300',
                                              remove='bg-slate-850 border-slate-800 text-slate-300')
-                await asyncio.sleep(0.05)  # Yield control to let NiceGUI render the UI update
+                await asyncio.sleep(0.05)
 
             # 1. Processing
             await update_step("Analyzing and processing query...")
-            processor = Processor()
-            processed_query = processor.process_query(user_query)
+            processed_query = processor_service.process_query(user_query)
 
             # 2. Retrieval
             await update_step("Searching knowledge base for relevant documents...")
@@ -100,8 +107,7 @@ async def rag_search_stream(user_query: str, container):
 
             # 3. Reranking
             await update_step("Evaluating and reranking document relevance...")
-            ranker = Reranker(user_query, retrieved_docs)
-            ranked_documents = ranker.rerank()
+            ranked_documents = rerank_service.rerank(user_query, retrieved_docs)
 
             # 4. Context
             await update_step("Building optimized context payload...")
@@ -109,33 +115,42 @@ async def rag_search_stream(user_query: str, container):
 
             # 5. LLM Generation
             await update_step("Synthesizing final response...")
-            result = prompt_model(user_query, context)
+            result = await run.io_bound(local_model.prompt_model, user_query, context)
 
             # Complete
             await update_step("Pipeline completed successfully", finished=True)
 
-            # Append Markdown answer
-            ui.element('div').classes('h-px bg-slate-800 w-full my-4')  # Divider line
-            ui.markdown(result.content).classes('text-slate-200 leading-relaxed markdown-body w-full')
+            # Append Markdown answer cleanly (ONLY ONCE)
+            ui.element('div').classes('h-px bg-slate-800 w-full my-4')
+            ui.markdown(result.content).classes(
+                'text-slate-200 leading-relaxed markdown-body w-full'
+            )
 
-    # Scroll down to see the response
-    await ui.run_javascript(f'window.scrollTo({{top: document.body.scrollHeight, behavior: "smooth"}});')
+    # Give NiceGUI a quick moment to render the layout cards into the DOM
+    await asyncio.sleep(0.1)
+
+    # Target the response element to bring it into view smoothly
+    await ui.run_javascript(f'''
+    const el = getElement({container.id}) || document.getElementById("{container.id}");
+    if (el) {{
+        el.scrollTo({{
+            top: el.scrollHeight,
+            behavior: 'smooth'
+        }});
+    }}
+    ''')
 
 async def handle_send(e):
-    # 1. Check if Shift was held down
     if e.args and e.args.get('shiftKey'):
-        # Allow the newline by appending it to the input value
         question.value += '\n'
         return
 
-    # 2. Otherwise, proceed with normal submission logic
     query = question.value.strip()
     if not query:
         return
 
     question.value = ""
 
-    # Add items to the sidebar history instantly
     with history_container:
         with ui.row().classes(
                 'w-full items-center gap-2 p-2 hover:bg-slate-800 rounded-lg cursor-pointer transition-colors group'):
@@ -143,11 +158,11 @@ async def handle_send(e):
             ui.label(query if len(query) < 25 else f"{query[:22]}...").classes(
                 'text-sm text-slate-400 group-hover:text-slate-200 truncate')
 
-    # Remove the initial placeholder text if it's the first message
     if len(history) == 0:
         chat_container.clear()
 
     await rag_search_stream(query, chat_container)
+
 
 # --- UI Layout Design ---
 with ui.row().classes('w-full h-screen no-wrap gap-0 bg-[#0b0f19]'):
@@ -155,7 +170,6 @@ with ui.row().classes('w-full h-screen no-wrap gap-0 bg-[#0b0f19]'):
     with ui.column().classes(
             'w-64 h-full bg-slate-950 border-r border-slate-900 p-4 flex-shrink-0 flex justify-between'):
         with ui.column().classes('w-full gap-4'):
-            # Header
             with ui.row().classes('items-center gap-2 px-2 py-1'):
                 ui.icon('auto_awesome', size='sm').classes('text-emerald-400')
                 ui.label("RAG Studio").classes('text-lg font-bold tracking-wide text-slate-100')
@@ -163,46 +177,78 @@ with ui.row().classes('w-full h-screen no-wrap gap-0 bg-[#0b0f19]'):
             ui.element('div').classes('h-px bg-slate-900 w-full')
             ui.label("Recent Activity").classes('text-xs font-semibold uppercase tracking-wider text-slate-500 px-2')
 
-            # Scrolling container for historical prompts
             history_container = ui.column().classes('w-full gap-1 overflow-y-auto custom-scroll max-h-[70vh]')
 
-        # Footer branding
         ui.label("v1.2.0 • Built by Jeslor").classes('text-center text-xs text-slate-600 w-full')
 
     # ================= MAIN AREA =================
     with ui.column().classes('flex-1 h-full relative items-center justify-between gap-0'):
-        # Top Header Bar
         with ui.row().classes(
                 'w-full justify-between items-center px-8 py-4 border-b border-slate-900/60 bg-slate-950/20 backdrop-blur'):
             ui.label("Pipeline Workspace").classes('font-medium text-slate-300')
             ui.badge('Connected', color='positive').classes('px-2 py-0.5 text-xs')
 
-        # ===== WORKSPACE SCROLL AREA =====
         chat_container = ui.column().classes(
             'w-full max-w-4xl flex-1 overflow-y-auto p-6 md:p-8 custom-scroll mb-32 pb-10')
         with chat_container:
-            # Welcoming banner state
             with ui.column().classes('w-full items-center justify-center py-20 text-center gap-3 text-slate-500'):
                 ui.icon('explore', size='xl').classes('text-slate-700')
                 ui.label("Ready for instructions").classes('text-lg font-medium text-slate-400')
                 ui.label("Submit a query below to monitor the retrieval processing stream.").classes('text-sm max-w-sm')
 
-        # ===== STICKY FLOATING INPUT CONTAINER =====
         with ui.row().classes(
                 'absolute bottom-0 left-0 right-0 justify-center p-6 bg-gradient-to-t from-[#0b0f19] via-[#0b0f19]/95 to-transparent'):
-            with ui.row().classes(
-                    'search-input'):
+            with ui.row().classes('search-input'):
                 question = ui.textarea(
                     placeholder='Ask your knowledge base anything...'
                 ).props('autogrow borderless lines=1').classes(
-                    'flex-1 text-slate-250 px-4 py-2 bg-transparent text-base focus:outline-none')
+                    'flex-1 text-slate-200 px-4 py-2 bg-transparent text-base focus:outline-none')
 
-                # Setup shift +Enter to just go to a new line
                 question.on('keydown.enter.prevent', handle_send, args=['shiftKey'])
 
                 with ui.button(icon='arrow_upward', on_click=lambda e: handle_send(e)).props(
                         'round color=emerald elevation=0').classes(
-                        'transition-transform active:scale-95 flex-shrink-0 m-1'):
+                    'transition-transform active:scale-95 flex-shrink-0 m-1'):
                     ui.tooltip('Execute RAG query (Enter)')
 
-ui.run(title="RAG Assistant Workspace", favicon="assets/favicon.ico")
+
+# --- Desktop Window Taskbar/Dock Configuration ---
+def setup_desktop_environment():
+    icon_path = os.path.join("assets", "favicon.ico")
+
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            myappid = 'jeslor.localragstudio.workspace.v1'
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+        except Exception:
+            pass
+
+    elif sys.platform == "darwin":
+        try:
+            from AppKit import NSApplication, NSImage, NSApplicationActivationPolicyAccessory
+            app_instance = NSApplication.sharedApplication()
+            app_instance.setActivationPolicy_(NSApplicationActivationPolicyAccessory)
+
+            if os.path.exists(icon_path):
+                icon_image = NSImage.alloc().initWithContentsOfFile_(icon_path)
+                if icon_image:
+                    app_instance.setApplicationIconImage_(icon_image)
+        except Exception:
+            pass
+
+
+# Connect initialization wrapper to NiceGUI global hooks
+def on_startup():
+    setup_desktop_environment()
+
+
+app.on_startup(on_startup)
+
+# Run Native Desktop Window Core Loops
+ui.run(
+    title="RAG Assistant Workspace",
+    favicon=os.path.join("assets", "favicon.ico"),
+    native=True,
+    reload=False,
+)

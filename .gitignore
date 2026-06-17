@@ -7,4 +7,4 @@
 vector_storage/*
 
 # But do not ignore the .gitkeep files that preserve the folder structure
-!vector_storage/**/.gitkeep
+!vector_storage/**/.gitkeep__pycache__/

@@ -15,3 +15,6 @@ class Processor:
 
         return f"{query}, intent:{intent}"
 
+
+processor_service = Processor()
+

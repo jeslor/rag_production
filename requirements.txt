@@ -10,3 +10,4 @@ chromadb
 sentence-transformers
 torch
 numpy
+nicegui

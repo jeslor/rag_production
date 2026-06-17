@@ -167,7 +167,7 @@ with ui.row().classes('w-full h-screen no-wrap gap-0 bg-[#0b0f19]'):
             history_container = ui.column().classes('w-full gap-1 overflow-y-auto custom-scroll max-h-[70vh]')
 
         # Footer branding
-        ui.label("v1.2.0 • Powered by NiceGUI").classes('text-center text-xs text-slate-600 w-full')
+        ui.label("v1.2.0 • Built by Jeslor").classes('text-center text-xs text-slate-600 w-full')
 
     # ================= MAIN AREA =================
     with ui.column().classes('flex-1 h-full relative items-center justify-between gap-0'):
@@ -175,7 +175,7 @@ with ui.row().classes('w-full h-screen no-wrap gap-0 bg-[#0b0f19]'):
         with ui.row().classes(
                 'w-full justify-between items-center px-8 py-4 border-b border-slate-900/60 bg-slate-950/20 backdrop-blur'):
             ui.label("Pipeline Workspace").classes('font-medium text-slate-300')
-            ui.badge('Connected').classes('px-2 py-0.5 text-xs bg-green-500 text-white')
+            ui.badge('Connected', color='positive').classes('px-2 py-0.5 text-xs')
 
         # ===== WORKSPACE SCROLL AREA =====
         chat_container = ui.column().classes(
@@ -205,4 +205,4 @@ with ui.row().classes('w-full h-screen no-wrap gap-0 bg-[#0b0f19]'):
                         'transition-transform active:scale-95 flex-shrink-0 m-1'):
                     ui.tooltip('Execute RAG query (Enter)')
 
-ui.run(title="RAG Assistant Workspace")
+ui.run(title="RAG Assistant Workspace", favicon="assets/favicon.ico")

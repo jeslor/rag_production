@@ -114,10 +114,10 @@ RAG pipeline/
 
 ```
     # Clone the repository
-    git clone https://github.com/jeslor/local-rag-boilerplate.git
+    git clone https://github.com/jeslor/rag_production.git
 
     # Enter project directory
-    cd local-rag-boilerplate
+    cd rag_production
 ```
 
 ### 2. Install Dependencies
@@ -148,9 +148,9 @@ Place your target PDFs into data/raw_pdfs/. Then process them into your vector s
 Note: The initial run requires an internet connection to securely cache the BAAI/bge-m3 model weights (~1.2GB) locally. All subsequent execution layers operate completely standalone and 100% offline.
 
 ### Phase 2: Semantic Retrieval
-Once your local SQLite matrix database is compiled, execute queries instantly without rebuilding indices:
+Once your local SQLite matrix database is compiled, execute the GUI App to start querying:
 ````
-    python scripts/step2_query.py
+    python main.py
 ````
 ### 💬 Phase 3: Interactive Querying (Ask Your Knowledge Base)
 Once the vector database has been built and populated, you can begin interacting with your private knowledge system through natural language queries.

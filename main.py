@@ -131,11 +131,13 @@ async def rag_search_stream(user_query: str, container):
 
     # Target the response element to bring it into view smoothly
     await ui.run_javascript(f'''
-    const el = getElement({container.id}) || document.getElementById("{container.id}");
-    if (el) {{
-        el.scrollTo({{
-            top: el.scrollHeight,
-            behavior: 'smooth'
+    const container = getElement({container.id}) || document.getElementById("{container.id}");
+    const target = container ? container.lastElementChild : null;
+
+    if (target) {{
+        target.scrollIntoView({{
+            behavior: 'smooth',
+            block: 'start'
         }});
     }}
     ''')
@@ -151,6 +153,7 @@ async def handle_send(e):
 
     question.value = ""
 
+
     with history_container:
         with ui.row().classes(
                 'w-full items-center gap-2 p-2 hover:bg-slate-800 rounded-lg cursor-pointer transition-colors group'):
@@ -161,8 +164,20 @@ async def handle_send(e):
     if len(history) == 0:
         chat_container.clear()
 
-    await rag_search_stream(query, chat_container)
+    chat_container.update()
 
+    await ui.run_javascript(f'''
+    setTimeout(() => {{
+        const el = getElement({chat_container.id});
+        if (el) {{
+            el.scrollTo({{
+                top: el.scrollHeight,
+                behavior: 'smooth'
+            }});
+        }}
+    }}, 50);
+    ''')
+    await rag_search_stream(query, chat_container)
 
 # --- UI Layout Design ---
 with ui.row().classes('w-full h-screen no-wrap gap-0 bg-[#0b0f19]'):

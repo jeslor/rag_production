@@ -17,10 +17,6 @@ Enterprise-grade RAG engine with an interactive pipeline monitor. Built with Nic
 
 ## 🏗️ Architectural Overview
 
-Handling sensitive enterprise data requires zero tolerance for data leaks. This system operates on a cleanly **decoupled dual-pipeline architecture**, ensuring heavy ingestion tasks do not block runtime retrieval, and data never leaves the local machine.
-
-## 🏗️ Architectural Overview
-
 Handling sensitive enterprise data requires zero tolerance for third-party leaks. This system operates on a cleanly **decoupled dual-pipeline architecture**, ensuring heavy ingestion tasks do not block runtime retrieval, and data never leaves your local machine.
 
 ```text

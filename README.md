@@ -1,7 +1,7 @@
-# 🧠 Local RAG Boilerplate (Universal Vector Engine)
+# 🧠 Production-grade RAG pipeline.
 
 <p align="center">
-  <img src="assets/rag.jpg" alt="An entirely local, secure, and domain-agnostic Retrieval-Augmented Generation (RAG) framework." width="900">
+  <img src="assets/rag_cover.jpg" alt="An entirely local, secure, and domain-agnostic Retrieval-Augmented Generation (RAG) framework." width="900">
 </p>
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://python.org)
@@ -10,7 +10,6 @@
 [![Embeddings](https://img.shields.io/badge/Model-BAAI%2Fbge--m3-purple.svg)](https://huggingface.co/BAAI/bge-m3)
 [![Security](https://img.shields.io/badge/Security-Air--Gapped-red.svg)]()
 
-## Production-grade RAG pipeline. 
 
 Enterprise-grade RAG engine with an interactive pipeline monitor. Built with NiceGUI, featuring query preprocessing, dense retrieval, cross-encoder reranking, and token-constrained context assembly.
 

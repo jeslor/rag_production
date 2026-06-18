@@ -1,7 +1,7 @@
 # 🧠 Local RAG Boilerplate (Universal Vector Engine)
 
 <p align="center">
-  <img src="assets/rag.jpg" alt="An entirely local, secure, and domain-agnostic Retrieval-Augmented Generation (RAG) framework." width="900">
+  <img src="assets/rag_cover.jpg" alt="An entirely local, secure, and domain-agnostic Retrieval-Augmented Generation (RAG) framework." width="900">
 </p>
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://python.org)

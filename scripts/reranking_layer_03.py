@@ -18,16 +18,14 @@ class Reranker:
 
         # Simple, straightforward synchronous execution
         rank_results = self.model.rank(
-            query= query,
-            documents=doc_texts,
-            top_k=self.top_k
+            query=query, documents=doc_texts, top_k=self.top_k
         )
 
         reranked_documents = []
         for hit in rank_results:
-            original_index = hit['corpus_id']
+            original_index = hit["corpus_id"]
             document = documents[original_index]
-            document.metadata['rerank_score'] = float(hit['score'])
+            document.metadata["rerank_score"] = float(hit["score"])
             reranked_documents.append(document)
 
         return reranked_documents

@@ -1,4 +1,3 @@
-
 from pypdf import PdfReader
 from pathlib import Path
 import fitz
@@ -38,7 +37,9 @@ def safe_extract(page, page_num: int) -> str:
                 return text
 
         except Exception as e:
-            print(f"Failed to extract text using mode {mode} on page {page_num}, Error: {e}")
+            print(
+                f"Failed to extract text using mode {mode} on page {page_num}, Error: {e}"
+            )
 
     return ""
 
@@ -52,39 +53,38 @@ def process_single_pdf(pdf_path: Path) -> list[Document]:
     print(f"📖 Processing '{pdf_path.name}' ({total_pages} pages)...")
 
     for page_num, page in enumerate(reader.pages):
-       try:
-           # 1. Digital Text Cascade (Plain -> Layout -> Standard)
-           text = safe_extract(page, page_num+1)
+        try:
+            # 1. Digital Text Cascade (Plain -> Layout -> Standard)
+            text = safe_extract(page, page_num + 1)
 
-           # 2. OCR Fallback Cascade
-           is_ocr_used = False
-           if not text:
-               text = extract_text_ocr_fallback(pdf_path, page_num)
-               is_ocr_used = True
+            # 2. OCR Fallback Cascade
+            is_ocr_used = False
+            if not text:
+                text = extract_text_ocr_fallback(pdf_path, page_num)
+                is_ocr_used = True
 
-           # 3. Commit Document block if any text was rescued
-           if text and text.strip():
-               pdf_documents.append(
-                   Document(
-                       page_content=text,
-                       metadata={
-                           "source": str(pdf_path),
-                           "file_name": pdf_path.name,
-                           "page": page_num + 1,
-                           "total_pages": total_pages,
-                           "extraction_method": "ocr" if is_ocr_used else "digital"
-                       }
-                   )
-               )
-       except Exception as e:
-           print(
-               f"⚠️ Failed page {page_num + 1} "
-               f"of {pdf_path.name}: {e}"
-           )
+            # 3. Commit Document block if any text was rescued
+            if text and text.strip():
+                pdf_documents.append(
+                    Document(
+                        page_content=text,
+                        metadata={
+                            "source": str(pdf_path),
+                            "file_name": pdf_path.name,
+                            "page": page_num + 1,
+                            "total_pages": total_pages,
+                            "extraction_method": "ocr" if is_ocr_used else "digital",
+                        },
+                    )
+                )
+        except Exception as e:
+            print(f"⚠️ Failed page {page_num + 1} " f"of {pdf_path.name}: {e}")
 
     # Warn if the entire file resulted in absolute emptiness
     if not pdf_documents:
-        print(f"  ⚠️ Warning: Successfully read '{pdf_path.name}' but 0 characters were extracted across all pages.")
+        print(
+            f"  ⚠️ Warning: Successfully read '{pdf_path.name}' but 0 characters were extracted across all pages."
+        )
 
     return pdf_documents
 
@@ -116,5 +116,7 @@ def ingest_pdf_directory(directory_path: str) -> list[Document]:
             error_count += 1
             print(f"❌ Critical error parsing file {pdf_path.name}: {e}")
 
-    print(f"\n--- Ingestion Summary: Successfully parsed {success_count} PDFs. Failed on {error_count} PDFs. ---")
+    print(
+        f"\n--- Ingestion Summary: Successfully parsed {success_count} PDFs. Failed on {error_count} PDFs. ---"
+    )
     return all_documents

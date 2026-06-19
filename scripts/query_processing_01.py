@@ -2,7 +2,7 @@ class Processor:
     def __init__(self):
         pass
 
-    def process_query(self, query:str):
+    def process_query(self, query: str):
         query = query.lower()
         query = query.strip()
         query = " ".join(query.split())
@@ -17,4 +17,3 @@ class Processor:
 
 
 processor_service = Processor()
-

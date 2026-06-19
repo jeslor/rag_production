@@ -19,7 +19,9 @@ def rag_search(user_query: str):
     print("starting ranking...🟡")
     ranker = Reranker(user_query, retrieved_docs)
     ranked_documents = ranker.rerank()
-    print(f"✅ Completed Reranking of docks total returned:({len(ranked_documents)} docs)\n")
+    print(
+        f"✅ Completed Reranking of docks total returned:({len(ranked_documents)} docs)\n"
+    )
 
     # 4. Build context and count tokens
     print("starting context building...🟡")
@@ -32,7 +34,7 @@ def rag_search(user_query: str):
     print(result.content)
     print("✅ Completed prompting the model\n")
 
-    return  result
+    return result
 
     # Display
     # for i, doc in enumerate(ranked_documents):
@@ -41,7 +43,6 @@ def rag_search(user_query: str):
     #     score = doc.metadata.get('rerank_score', 0.0)
     #     print(f"[Match {i + 1}] (Score: {score:.4f}) Source: {source} (Page {page})")
     #     print(f"Content: {doc.page_content.strip()}")
-
 
 
 if __name__ == "__main__":

@@ -11,6 +11,7 @@ DB_DIR = BASE_DIR / "vector_storage/chroma_db"
 MODEL_NAME = "BAAI/bge-large-en-v1.5"
 MODEL_NAME2 = "BAAI/bge-m3"
 
+
 @lru_cache(maxsize=1)
 def get_optimal_chipset() -> str:
     if torch.cuda.is_available():
@@ -19,6 +20,7 @@ def get_optimal_chipset() -> str:
         return "mps"
     else:
         return "cpu"
+
 
 # Default Hyperparameters
 DEFAULT_CHUNK_SIZE = 750

@@ -1,4 +1,3 @@
-
 # def ingest_pdf_directory(directory_path: str) -> list[Document]:
 #     documents = []
 #     path = Path(directory_path)

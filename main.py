@@ -4,7 +4,6 @@ import os
 import sys
 from nicegui import ui, app, run
 
-
 # Appends your local project layout cleanly to Python's system paths
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -16,7 +15,7 @@ from scripts.build_context_04 import build_context
 from scripts.llm_generation_05 import local_model
 
 # App-wide global styles
-ui.add_head_html('''
+ui.add_head_html("""
 <style>
     body {
         background-color: #0b0f19;
@@ -57,7 +56,7 @@ ui.add_head_html('''
         opacity: 1;
     }
 </style>
-''')
+""")
 
 history = []
 
@@ -69,23 +68,32 @@ async def rag_search_stream(user_query: str, container):
 
     with container:
         # User message card
-        with ui.card().classes('w-full bg-slate-800 border border-slate-700/50 p-4 rounded-xl shadow-md mb-4'):
-            with ui.row().classes('items-center gap-2 text-slate-400 text-xs font-semibold uppercase mb-1'):
-                ui.icon('person', size='xs')
-                ui.label('You')
-            ui.label(user_query).classes('text-base text-slate-100')
+        with ui.card().classes(
+            "w-full bg-slate-800 border border-slate-700/50 p-4 rounded-xl shadow-md mb-4"
+        ):
+            with ui.row().classes(
+                "items-center gap-2 text-slate-400 text-xs font-semibold uppercase mb-1"
+            ):
+                ui.icon("person", size="xs")
+                ui.label("You")
+            ui.label(user_query).classes("text-base text-slate-100")
 
         # AI Assistant dynamic response card
-        with ui.card().classes('w-full bg-slate-900 border border-slate-800 p-5 rounded-xl shadow-lg mb-4'):
-            with ui.row().classes('items-center gap-2 text-emerald-400 text-xs font-semibold uppercase mb-3'):
-                ui.icon('smart_toy', size='xs')
-                ui.label('Assistant')
+        with ui.card().classes(
+            "w-full bg-slate-900 border border-slate-800 p-5 rounded-xl shadow-lg mb-4"
+        ):
+            with ui.row().classes(
+                "items-center gap-2 text-emerald-400 text-xs font-semibold uppercase mb-3"
+            ):
+                ui.icon("smart_toy", size="xs")
+                ui.label("Assistant")
 
             # Status step container
             status_container = ui.row().classes(
-                'items-center gap-3 bg-slate-850 p-3 rounded-lg border border-slate-800 w-full text-slate-300 text-sm')
+                "items-center gap-3 bg-slate-850 p-3 rounded-lg border border-slate-800 w-full text-slate-300 text-sm"
+            )
             with status_container:
-                spinner = ui.spinner(type='dots', size='sm', color='emerald')
+                spinner = ui.spinner(type="dots", size="sm", color="emerald")
                 status_text = ui.label("Initializing...")
 
             # Helper function to update status UI instantly
@@ -93,8 +101,10 @@ async def rag_search_stream(user_query: str, container):
                 status_text.text = text
                 if finished:
                     spinner.delete()
-                    status_container.classes('bg-emerald-950/30 border-emerald-900/50 text-emerald-300',
-                                             remove='bg-slate-850 border-slate-800 text-slate-300')
+                    status_container.classes(
+                        "bg-emerald-950/30 border-emerald-900/50 text-emerald-300",
+                        remove="bg-slate-850 border-slate-800 text-slate-300",
+                    )
                 await asyncio.sleep(0.05)
 
             # 1. Processing
@@ -121,16 +131,16 @@ async def rag_search_stream(user_query: str, container):
             await update_step("Pipeline completed successfully", finished=True)
 
             # Append Markdown answer cleanly (ONLY ONCE)
-            ui.element('div').classes('h-px bg-slate-800 w-full my-4')
+            ui.element("div").classes("h-px bg-slate-800 w-full my-4")
             ui.markdown(result.content).classes(
-                'text-slate-200 leading-relaxed markdown-body w-full'
+                "text-slate-200 leading-relaxed markdown-body w-full"
             )
 
     # Give NiceGUI a quick moment to render the layout cards into the DOM
     await asyncio.sleep(0.1)
 
     # Target the response element to bring it into view smoothly
-    await ui.run_javascript(f'''
+    await ui.run_javascript(f"""
     const container = getElement({container.id}) || document.getElementById("{container.id}");
     const target = container ? container.lastElementChild : null;
 
@@ -140,11 +150,12 @@ async def rag_search_stream(user_query: str, container):
             block: 'start'
         }});
     }}
-    ''')
+    """)
+
 
 async def handle_send(e):
-    if e.args and e.args.get('shiftKey'):
-        question.value += '\n'
+    if e.args and e.args.get("shiftKey"):
+        question.value += "\n"
         return
 
     query = question.value.strip()
@@ -153,20 +164,23 @@ async def handle_send(e):
 
     question.value = ""
 
-
     with history_container:
         with ui.row().classes(
-                'w-full items-center gap-2 p-2 hover:bg-slate-800 rounded-lg cursor-pointer transition-colors group'):
-            ui.icon('chat_bubble_outline', size='xs').classes('text-slate-500 group-hover:text-slate-300')
+            "w-full items-center gap-2 p-2 hover:bg-slate-800 rounded-lg cursor-pointer transition-colors group"
+        ):
+            ui.icon("chat_bubble_outline", size="xs").classes(
+                "text-slate-500 group-hover:text-slate-300"
+            )
             ui.label(query if len(query) < 25 else f"{query[:22]}...").classes(
-                'text-sm text-slate-400 group-hover:text-slate-200 truncate')
+                "text-sm text-slate-400 group-hover:text-slate-200 truncate"
+            )
 
     if len(history) == 0:
         chat_container.clear()
 
     chat_container.update()
 
-    await ui.run_javascript(f'''
+    await ui.run_javascript(f"""
     setTimeout(() => {{
         const el = getElement({chat_container.id});
         if (el) {{
@@ -176,55 +190,81 @@ async def handle_send(e):
             }});
         }}
     }}, 50);
-    ''')
+    """)
     await rag_search_stream(query, chat_container)
 
+
 # --- UI Layout Design ---
-with ui.row().classes('w-full h-screen no-wrap gap-0 bg-[#0b0f19]'):
+with ui.row().classes("w-full h-screen no-wrap gap-0 bg-[#0b0f19]"):
     # ================= LEFT SIDEBAR =================
     with ui.column().classes(
-            'w-64 h-full bg-slate-950 border-r border-slate-900 p-4 flex-shrink-0 flex justify-between'):
-        with ui.column().classes('w-full gap-4'):
-            with ui.row().classes('items-center gap-2 px-2 py-1'):
-                ui.icon('auto_awesome', size='sm').classes('text-emerald-400')
-                ui.label("RAG Studio").classes('text-lg font-bold tracking-wide text-slate-100')
+        "w-64 h-full bg-slate-950 border-r border-slate-900 p-4 flex-shrink-0 flex justify-between"
+    ):
+        with ui.column().classes("w-full gap-4"):
+            with ui.row().classes("items-center gap-2 px-2 py-1"):
+                ui.icon("auto_awesome", size="sm").classes("text-emerald-400")
+                ui.label("RAG Studio").classes(
+                    "text-lg font-bold tracking-wide text-slate-100"
+                )
 
-            ui.element('div').classes('h-px bg-slate-900 w-full')
-            ui.label("Recent Activity").classes('text-xs font-semibold uppercase tracking-wider text-slate-500 px-2')
+            ui.element("div").classes("h-px bg-slate-900 w-full")
+            ui.label("Recent Activity").classes(
+                "text-xs font-semibold uppercase tracking-wider text-slate-500 px-2"
+            )
 
-            history_container = ui.column().classes('w-full gap-1 overflow-y-auto custom-scroll max-h-[70vh]')
+            history_container = ui.column().classes(
+                "w-full gap-1 overflow-y-auto custom-scroll max-h-[70vh]"
+            )
 
-        ui.label("v1.2.0 • Built by Jeslor").classes('text-center text-xs text-slate-600 w-full')
+        ui.label("v1.2.0 • Built by Jeslor").classes(
+            "text-center text-xs text-slate-600 w-full"
+        )
 
     # ================= MAIN AREA =================
-    with ui.column().classes('flex-1 h-full relative items-center justify-between gap-0'):
+    with ui.column().classes(
+        "flex-1 h-full relative items-center justify-between gap-0"
+    ):
         with ui.row().classes(
-                'w-full justify-between items-center px-8 py-4 border-b border-slate-900/60 bg-slate-950/20 backdrop-blur'):
-            ui.label("Pipeline Workspace").classes('font-medium text-slate-300')
-            ui.badge('Connected', color='positive').classes('px-2 py-0.5 text-xs')
+            "w-full justify-between items-center px-8 py-4 border-b border-slate-900/60 bg-slate-950/20 backdrop-blur"
+        ):
+            ui.label("Pipeline Workspace").classes("font-medium text-slate-300")
+            ui.badge("Connected", color="positive").classes("px-2 py-0.5 text-xs")
 
         chat_container = ui.column().classes(
-            'w-full max-w-4xl flex-1 overflow-y-auto p-6 md:p-8 custom-scroll mb-32 pb-10')
+            "w-full max-w-4xl flex-1 overflow-y-auto p-6 md:p-8 custom-scroll mb-32 pb-10"
+        )
         with chat_container:
-            with ui.column().classes('w-full items-center justify-center py-20 text-center gap-3 text-slate-500'):
-                ui.icon('explore', size='xl').classes('text-slate-700')
-                ui.label("Ready for instructions").classes('text-lg font-medium text-slate-400')
-                ui.label("Submit a query below to monitor the retrieval processing stream.").classes('text-sm max-w-sm')
+            with ui.column().classes(
+                "w-full items-center justify-center py-20 text-center gap-3 text-slate-500"
+            ):
+                ui.icon("explore", size="xl").classes("text-slate-700")
+                ui.label("Ready for instructions").classes(
+                    "text-lg font-medium text-slate-400"
+                )
+                ui.label(
+                    "Submit a query below to monitor the retrieval processing stream."
+                ).classes("text-sm max-w-sm")
 
         with ui.row().classes(
-                'absolute bottom-0 left-0 right-0 justify-center p-6 bg-gradient-to-t from-[#0b0f19] via-[#0b0f19]/95 to-transparent'):
-            with ui.row().classes('search-input'):
-                question = ui.textarea(
-                    placeholder='Ask your knowledge base anything...'
-                ).props('autogrow borderless lines=1').classes(
-                    'flex-1 text-slate-200 px-4 py-2 bg-transparent text-base focus:outline-none')
+            "absolute bottom-0 left-0 right-0 justify-center p-6 bg-gradient-to-t from-[#0b0f19] via-[#0b0f19]/95 to-transparent"
+        ):
+            with ui.row().classes("search-input"):
+                question = (
+                    ui.textarea(placeholder="Ask your knowledge base anything...")
+                    .props("autogrow borderless lines=1")
+                    .classes(
+                        "flex-1 text-slate-200 px-4 py-2 bg-transparent text-base focus:outline-none"
+                    )
+                )
 
-                question.on('keydown.enter.prevent', handle_send, args=['shiftKey'])
+                question.on("keydown.enter.prevent", handle_send, args=["shiftKey"])
 
-                with ui.button(icon='arrow_upward', on_click=lambda e: handle_send(e)).props(
-                        'round color=emerald elevation=0').classes(
-                    'transition-transform active:scale-95 flex-shrink-0 m-1'):
-                    ui.tooltip('Execute RAG query (Enter)')
+                with ui.button(
+                    icon="arrow_upward", on_click=lambda e: handle_send(e)
+                ).props("round color=emerald elevation=0").classes(
+                    "transition-transform active:scale-95 flex-shrink-0 m-1"
+                ):
+                    ui.tooltip("Execute RAG query (Enter)")
 
 
 # --- Desktop Window Taskbar/Dock Configuration ---
@@ -234,14 +274,20 @@ def setup_desktop_environment():
     if sys.platform == "win32":
         try:
             import ctypes
-            myappid = 'jeslor.localragstudio.workspace.v1'
+
+            myappid = "jeslor.localragstudio.workspace.v1"
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
         except Exception:
             pass
 
     elif sys.platform == "darwin":
         try:
-            from AppKit import NSApplication, NSImage, NSApplicationActivationPolicyAccessory
+            from AppKit import (
+                NSApplication,
+                NSImage,
+                NSApplicationActivationPolicyAccessory,
+            )
+
             app_instance = NSApplication.sharedApplication()
             app_instance.setActivationPolicy_(NSApplicationActivationPolicyAccessory)
 

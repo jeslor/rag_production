@@ -14,6 +14,11 @@ MODEL_NAME2 = "BAAI/bge-m3"
 
 @lru_cache(maxsize=1)
 def get_optimal_chipset() -> str:
+    """Determine the optimal compute chipset for local model inference.
+
+    Caches the evaluation result to prevent redundant hardware polling
+    across pipeline layers.
+    """
     if torch.cuda.is_available():
         return "cuda"
     elif torch.backends.mps.is_available():
